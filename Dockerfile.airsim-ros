@@ -88,10 +88,32 @@ ENV ROS_WORKSPACE=/opt/AirSim/ros
 
 # Скрипт запуска
 RUN echo '#!/bin/bash\n\
+set -e\n\
 source ${ROS_WORKSPACE}/devel/setup.bash\n\
-roslaunch rosbridge_server rosbridge_websocket.launch \
-roslaunch airsim_ros_pkgs airsim_node.launch host:=$WSL_HOST_IP output:=screen' \
-> /start_airsim_ros.sh && chmod +x /start_airsim_ros.sh
+\n\
+# Если переменная не задана, используем host.docker.internal (для Windows/Mac)\n\
+export WSL_HOST_IP=${WSL_HOST_IP:-host.docker.internal}\n\
+echo "Using WSL_HOST_IP=${WSL_HOST_IP}"\n\
+\n\
+# Запускаем roscore в фоне\n\
+echo "Starting roscore..."\n\
+roscore &\n\
+ROSCORE_PID=$!\n\
+sleep 3  # даём время на инициализацию\n\
+\n\
+# Запускаем rosbridge на порту 12090\n\
+echo "Starting rosbridge on port 12090..."\n\
+roslaunch rosbridge_server rosbridge_websocket.launch port:=12090 &\n\
+ROSBRIDGE_PID=$!\n\
+sleep 2\n\
+\n\
+# Запускаем airsim_node (останется на переднем плане)\n\
+echo "Starting AirSim ROS node..."\n\
+roslaunch airsim_ros_pkgs airsim_node.launch host:=${WSL_HOST_IP} output:=screen\n\
+\n\
+# Если airsim_node завершится, убиваем фоновые процессы\n\
+kill $ROSCORE_PID $ROSBRIDGE_PID 2>/dev/null\n\
+wait' > /start_airsim_ros.sh && chmod +x /start_airsim_ros.sh
 
 WORKDIR /root
 CMD ["/bin/bash"]
