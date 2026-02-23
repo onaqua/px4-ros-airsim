@@ -39,6 +39,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/* \
     && pip3 install mavsdk
 
+RUN pip install mavsdk
+
 # Копирование собранного PX4 из этапа сборки
 COPY --from=builder /workspace/PX4-Autopilot /workspace/PX4-Autopilot
 

@@ -12,7 +12,7 @@ services:
       - PX4_SIM_HOST=host.docker.internal
     command: /start_px4.sh
     ports:
-      - 4560:4560
+      - 14580:14580
 
   airsim-ros:
     build:
