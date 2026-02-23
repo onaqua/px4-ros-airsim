@@ -11,6 +11,8 @@ services:
       - WSL_HOST_IP=host.docker.internal
       - PX4_SIM_HOST=host.docker.internal
     command: /start_px4.sh
+    ports:
+      - 4560:4560
 
   airsim-ros:
     build:
@@ -26,4 +28,4 @@ services:
     depends_on:
       - px4-sitl
     ports:
-      - 9090:9090
+      - 11311:11311

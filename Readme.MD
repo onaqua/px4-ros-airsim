@@ -122,9 +122,9 @@ Edit `AirSim\\settings.json`:
       "UseTcp": true,
       "QgcHostIp": "",
       "TcpPort": 4560,
-      "ControlIp": "172.18.84.221",
+      "ControlIp": "127.0.0.1",
       "ControlPort": 14580,
-      "LocalHostIp": "172.18.80.1",
+      "LocalHostIp": "0.0.0.0",
       "Cameras": {
         "depth_camera": {
           "CameraType": "Depth",
@@ -372,9 +372,9 @@ docker build -f Dockerfile.px4 -t px4-sitl-mavsdk .
       "UseTcp": true,
       "QgcHostIp": "",
       "TcpPort": 4560,
-      "ControlIp": "172.18.84.221",
+      "ControlIp": "127.0.0.1",
       "ControlPort": 14580,
-      "LocalHostIp": "172.18.80.1",
+      "LocalHostIp": "0.0.0.0",
       "Cameras": {
         "depth_camera": {
           "CameraType": "Depth",

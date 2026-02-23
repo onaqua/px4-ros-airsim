@@ -71,11 +71,11 @@ mavsdk_server\n\
 
 # Скрипт для запуска обоих компонентов (для простоты)
 RUN echo '#!/bin/bash\n\
-# Запуск PX4 SITL в фоне\n\
-/start_px4.sh &\n\
-sleep 10\n\
 # Запуск MAVSDK Server\n\
-/start_mavsdk_server.sh\n\
+/start_mavsdk_server.sh &\n\
+sleep 10\n\
+# Запуск PX4 SITL в фоне\n\
+/start_px4.sh\n\
 ' > /start_all.sh && chmod +x /start_all.sh
 
 WORKDIR /root

@@ -72,6 +72,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ros-noetic-mavros* \
     ros-noetic-cv-bridge \
     ros-noetic-image-transport \
+    ros-noetic-rosbridge-server \
     libc++1 \
     libc++abi1 \
     libyaml-cpp-dev \
@@ -88,6 +89,7 @@ ENV ROS_WORKSPACE=/opt/AirSim/ros
 # Скрипт запуска
 RUN echo '#!/bin/bash\n\
 source ${ROS_WORKSPACE}/devel/setup.bash\n\
+roslaunch rosbridge_server rosbridge_websocket.launch \
 roslaunch airsim_ros_pkgs airsim_node.launch host:=$WSL_HOST_IP output:=screen' \
 > /start_airsim_ros.sh && chmod +x /start_airsim_ros.sh
 
