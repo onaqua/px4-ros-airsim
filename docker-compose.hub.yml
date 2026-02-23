@@ -1,7 +1,8 @@
 version: '3.8'
 
 services:
-  lebedeffdeveloper/px4-mavsdk:latest:
+  px4-sitl:
+    image: lebedeffdeveloper/px4-mavsdk:latest
     container_name: px4-sitl
     privileged: true
     environment:
@@ -12,7 +13,8 @@ services:
       - 14580:14580 #controller port
       - 50051:50051 #mavsdk_server port
 
-  lebedeffdeveloper/airsim-ros:latest:
+  airsim-ros:latest:
+    image: lebedeffdeveloper/airsim-ros:latest
     container_name: airsim-ros
     environment:
       - WSL_HOST_IP=host.docker.internal
