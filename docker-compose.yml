@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  px4-sitl:
+    build:
+      context: .
+      dockerfile: Dockerfile.px4
+    container_name: px4-sitl
+    privileged: true
+    environment:
+      - WSL_HOST_IP=host.docker.internal
+      - PX4_SIM_HOST=host.docker.internal
+    command: /start_px4.sh
+
+  airsim-ros:
+    build:
+      context: .
+      dockerfile: Dockerfile.airsim-ros
+    container_name: airsim-ros
+    environment:
+      - WSL_HOST_IP=host.docker.internal
+      - DISPLAY=${DISPLAY}
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix
+    command: /start_airsim_ros.sh
+    depends_on:
+      - px4-sitl
+    ports:
+      - 9090:9090

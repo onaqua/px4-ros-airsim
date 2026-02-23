@@ -1,0 +1,82 @@
+# syntax=docker/dockerfile:1.4
+FROM px4io/px4-dev-ros-noetic:latest AS builder
+
+# Предотвращаем интерактивные запросы
+ENV DEBIAN_FRONTEND=noninteractive
+ENV TZ=Etc/UTC
+
+# Установка дополнительных зависимостей для MAVSDK и утилит
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3-pip \
+    python3-dev \
+    git \
+    cmake \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+# Установка MAVSDK Python
+RUN pip3 install mavsdk
+
+# Клонирование и сборка PX4 Firmware (фиксированная версия для стабильности)
+WORKDIR /workspace
+RUN git clone https://github.com/PX4/PX4-Autopilot.git --recursive --branch v1.14.3 && \
+    cd PX4-Autopilot && \
+    make clean && \
+    make px4_sitl
+
+# --- Второй этап: финальный образ ---
+FROM px4io/px4-dev-ros-noetic:latest
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV TZ=Etc/UTC
+
+# Установка Python и MAVSDK для рантайма
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3-pip \
+    python3-dev \
+    net-tools \
+    iproute2 \
+    && rm -rf /var/lib/apt/lists/* \
+    && pip3 install mavsdk
+
+# Копирование собранного PX4 из этапа сборки
+COPY --from=builder /workspace/PX4-Autopilot /workspace/PX4-Autopilot
+
+# Установка переменных окружения для PX4
+ENV PX4_HOME_LAT=47.641468
+ENV PX4_HOME_LON=-122.140165
+ENV PX4_HOME_ALT=0.0
+
+# Скрипт для запуска PX4 SITL с правильными параметрами подключения к AirSim
+RUN echo '#!/bin/bash\n\
+# Настройка параметров для подключения к AirSim на Windows\n\
+export PX4_SIM_MODEL=iris\n\
+export PX4_SIM_HOSTNAME=$WSL_HOST_IP\n\
+\n\
+echo "Запуск PX4 SITL с подключением к AirSim на $PX4_SIM_HOST:$PX_SIM_PORT"\n\
+cd /workspace/PX4-Autopilot\n\
+\n\
+# Запуск PX4 SITL с TCP-соединением (как требуется для AirSim)\n\
+make px4_sitl none_iris\n\
+\n\
+# Альтернативный запуск с явным указанием TCP-порта\n\
+# /workspace/PX4-Autopilot/build/px4_sitl_default/bin/px4 -t /workspace/PX4-Autopilot/ROMFS/px4fmu_common -s etc/init.d-posix/rcS -w tcp://$PX4_SIM_HOST:$PX_SIM_PORT\n\
+' > /start_px4.sh && chmod +x /start_px4.sh
+
+# Скрипт для запуска MAVSDK Server
+RUN echo '#!/bin/bash\n\
+echo "Запуск MAVSDK Server"\n\
+mavsdk_server\n\
+' > /start_mavsdk_server.sh && chmod +x /start_mavsdk_server.sh
+
+# Скрипт для запуска обоих компонентов (для простоты)
+RUN echo '#!/bin/bash\n\
+# Запуск PX4 SITL в фоне\n\
+/start_px4.sh &\n\
+sleep 10\n\
+# Запуск MAVSDK Server\n\
+/start_mavsdk_server.sh\n\
+' > /start_all.sh && chmod +x /start_all.sh
+
+WORKDIR /root
+CMD ["/bin/bash"]

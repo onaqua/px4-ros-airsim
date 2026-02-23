@@ -1,0 +1,52 @@
+# syntax=docker/dockerfile:1.4
+FROM ubuntu:20.04 AS airsim-builder
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV TZ=Etc/UTC
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    cmake \
+    git \
+    wget \
+    ca-certificates \
+    libc++-dev \
+    libc++abi-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Установка GCC 8
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc-8 g++-8 \
+    && rm -rf /var/lib/apt/lists/* \
+    && update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 100 \
+    && update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-8 100
+
+WORKDIR /workspace
+RUN git clone https://github.com/Microsoft/AirSim.git && \
+    cd AirSim
+
+WORKDIR /workspace/AirSim
+RUN apt-get update && apt-get install sudo
+RUN ./setup.sh && \
+    ./build.sh
+
+# Второй этап
+FROM ubuntu:20.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV TZ=Etc/UTC
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libc++1 \
+    libc++abi1 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Копируем полный исходный код и собранные библиотеки
+COPY --from=airsim-builder /workspace/AirSim /opt/AirSim
+
+ENV AIRSIM_ROOT=/opt/AirSim
+ENV LD_LIBRARY_PATH=${AIRSIM_ROOT}/build/output/lib:${LD_LIBRARY_PATH}
+ENV CMAKE_PREFIX_PATH=${AIRSIM_ROOT}/build/output:${CMAKE_PREFIX_PATH}
+
+WORKDIR /root
+CMD ["/bin/bash"]
