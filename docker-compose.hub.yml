@@ -13,7 +13,7 @@ services:
       - 14580:14580 #controller port
       - 50051:50051 #mavsdk_server port
 
-  airsim-ros:latest:
+  airsim-ros:
     image: lebedeffdeveloper/airsim-ros:latest
     container_name: airsim-ros
     environment:
