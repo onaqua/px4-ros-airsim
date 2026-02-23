@@ -12,7 +12,8 @@ services:
       - PX4_SIM_HOST=host.docker.internal
     command: /start_px4.sh
     ports:
-      - 14580:14580
+      - 14580:14580 #controller port
+      - 50051:50051 #mavsdk_server port
 
   airsim-ros:
     build:
@@ -28,5 +29,5 @@ services:
     depends_on:
       - px4-sitl
     ports:
-      - 12090:12090
-      - 9090:9090
+      - 12090:12090 # ros airsim port
+      - 9090:9090   # ros ws bridge port
