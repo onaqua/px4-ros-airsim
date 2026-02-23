@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  lebedeffdeveloper/px4-mavsdk:latest:
+    container_name: px4-sitl
+    privileged: true
+    environment:
+      - WSL_HOST_IP=host.docker.internal
+      - PX4_SIM_HOST=host.docker.internal
+    command: /start_px4.sh
+    ports:
+      - 14580:14580 #controller port
+      - 50051:50051 #mavsdk_server port
+
+  lebedeffdeveloper/airsim-ros:latest:
+    container_name: airsim-ros
+    environment:
+      - WSL_HOST_IP=host.docker.internal
+      - DISPLAY=${DISPLAY}
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix
+    command: /start_airsim_ros.sh
+    depends_on:
+      - px4-sitl
+    ports:
+      - 12090:12090 # ros airsim port
+      - 9090:9090   # ros ws bridge port
+      - 11311:11311 # ros master
