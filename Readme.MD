@@ -3,11 +3,8 @@
 
 
 [![Docker](https://img.shields.io/badge/docker-ready-blue.svg)](https://www.docker.com/)
-
 [![ROS Noetic](https://img.shields.io/badge/ROS-Noetic-green)](https://wiki.ros.org/noetic)
-
 [![AirSim](https://img.shields.io/badge/AirSim-v1.8.1-orange)](https://github.com/microsoft/AirSim)
-
 [![PX4](https://img.shields.io/badge/PX4-v1.14.3-purple)](https://px4.io/)
 
 
